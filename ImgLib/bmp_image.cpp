@@ -130,6 +130,9 @@ namespace img_lib {
 
         int width = info_header.width;
         int height = info_header.height;
+        if (width < 0 || height < 0) {
+            return Image{};
+        }
         int stride = GetBMPStride(width);
 
         Image result(width, height, Color::Black());
