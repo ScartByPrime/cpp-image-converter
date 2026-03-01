@@ -11,7 +11,6 @@ using namespace std;
 
 namespace img_lib {
 
-    // структура из примера LibJPEG
     struct my_error_mgr {
         struct jpeg_error_mgr pub;
         jmp_buf setjmp_buffer;
@@ -19,7 +18,6 @@ namespace img_lib {
 
     typedef struct my_error_mgr* my_error_ptr;
 
-    // функция из примера LibJPEG
     METHODDEF(void)
         my_error_exit(j_common_ptr cinfo) {
         my_error_ptr myerr = (my_error_ptr)cinfo->err;
@@ -27,9 +25,6 @@ namespace img_lib {
         longjmp(myerr->setjmp_buffer, 1);
     }
 
-    // В эту функцию вставлен код примера из библиотеки libjpeg.
-    // Измените его, чтобы адаптировать к переменным file и image.
-    // Задание качества уберите - будет использовано качество по умолчанию
     bool SaveJPEG(const Path& file, const Image& image) {
         /* This struct contains the JPEG compression parameters and pointers to
         * working space (which is allocated as needed by the JPEG library).
@@ -206,7 +201,7 @@ namespace img_lib {
 
         /* Шаг 4: устанавливаем параметры декодирования */
 
-        // установим желаемый формат изображения
+        // желаемый формат изображения
         cinfo.out_color_space = JCS_RGB;
         cinfo.output_components = 3;
 

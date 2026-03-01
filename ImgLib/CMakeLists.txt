@@ -1,36 +1,45 @@
 cmake_minimum_required(VERSION 3.11)
-
 project(ImgLib CXX)
+
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# добавляем новую переменную - путь к LibJPEG
-set(LIBJPEG_DIR CACHE STRING "LibJPEG static library directory")
-if(NOT LIBJPEG_DIR)
-    message(FATAL_ERROR "Please, specify LibJPEG directory via -DLIBJPEG_DIR=<dir>")
-endif()
-message(STATUS "LibJPEG dir is ${LIBJPEG_DIR}, change via -DLIBJPEG_DIR=<dir>")
+# Политика для target_link_libraries
+cmake_policy(SET CMP0079 NEW)
 
-set(IMGLIB_MAIN_FILES img_lib.h img_lib.cpp)
+# Обязательный поиск JPEG
+find_package(JPEG REQUIRED)
+message(STATUS "JPEG found: ${JPEG_LIBRARIES}")
+message(STATUS "JPEG include dirs: ${JPEG_INCLUDE_DIRS}")
 
-# к файлам форматов добавим JPEG
-set(IMGLIB_FORMAT_FILES 
-    ppm_image.h ppm_image.cpp 
-    jpeg_image.h jpeg_image.cpp
-    bmp_image.h bmp_image.cpp)
+set(IMGLIB_SOURCES
+    img_lib.cpp
+    ppm_image.cpp
+    jpeg_image.cpp
+    bmp_image.cpp
+)
 
-add_library(ImgLib STATIC ${IMGLIB_MAIN_FILES} 
-            ${IMGLIB_FORMAT_FILES})
+set(IMGLIB_HEADERS
+    img_lib.h
+    ppm_image.h
+    jpeg_image.h
+    bmp_image.h
+    pack_defines.h
+)
 
-# Include-директории теперь включают LibJPEG
-target_include_directories(ImgLib PUBLIC "${LIBJPEG_DIR}/include")
-
-# Флаг INTERFACE обозначает видимость параметра - только для зависимых целей.
-# Для самой ImgLib не нужно указывать зависимости компоновки, поскольку
-# статическая библиотека не компонуется, а просто архивируется
-target_link_directories(ImgLib INTERFACE
-    "${LIBJPEG_DIR}/lib/$<IF:$<CONFIG:Debug>,Debug,Release>"
+# Проверяем, не создан ли уже таргет
+if(NOT TARGET ImgLib)
+    add_library(ImgLib STATIC ${IMGLIB_SOURCES} ${IMGLIB_HEADERS})
+    
+    target_include_directories(ImgLib PUBLIC 
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${JPEG_INCLUDE_DIRS}
     )
-
-# В качестве зависимости указано jpeg. Компоновщик будет искать
-# файл libjpeg.a
-target_link_libraries(ImgLib INTERFACE jpeg)
+    
+    target_link_libraries(ImgLib PRIVATE ${JPEG_LIBRARIES})
+    
+    # Явно указываем, что нужен JPEG
+    target_compile_definitions(ImgLib PUBLIC HAS_JPEG_SUPPORT)
+else()
+    message(STATUS "Target ImgLib already exists, skipping creation")
+endif()

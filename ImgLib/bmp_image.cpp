@@ -39,7 +39,6 @@ namespace img_lib {
         return 4 * ((w * 3 + 3) / 4);
     }
 
-    // напишите эту функцию
     bool SaveBMP(const Path& file, const Image& image) {
         if (!image) {
             return false;
@@ -106,7 +105,6 @@ namespace img_lib {
     }
 
 
-    // напишите эту функцию
     Image LoadBMP(const Path& file) {
         ifstream ifs(file, ios::binary);
         if (!ifs) {
